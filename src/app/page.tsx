@@ -2,6 +2,71 @@
 
 import { FormEvent, useEffect, useState } from "react";
 
+const schemaData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://sportiqx.xyz/#organization",
+      name: "SportIQX",
+      url: "https://sportiqx.xyz",
+      logo: "https://sportiqx.xyz/favicon-sportiqx.svg",
+      sameAs: [],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://sportiqx.xyz/#website",
+      url: "https://sportiqx.xyz",
+      name: "SportIQX",
+      publisher: {
+        "@id": "https://sportiqx.xyz/#organization",
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://sportiqx.xyz/?q={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://sportiqx.xyz/#webpage",
+      url: "https://sportiqx.xyz",
+      name: "SportIQX | Sports Venue Booking in VIT Vellore",
+      isPartOf: {
+        "@id": "https://sportiqx.xyz/#website",
+      },
+      about: {
+        "@id": "https://sportiqx.xyz/#organization",
+      },
+      description:
+        "Discover and book turfs, gaming parlours, swimming pools, badminton courts, cricket nets, gyms and sports academies near you.",
+      inLanguage: "en-IN",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://sportiqx.xyz/#faq",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What can I book on SportIQX?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "SportIQX supports booking for turfs, gaming parlours, swimming pools, badminton courts, cricket nets, gyms, yoga studios, and sports academies.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Which cities does SportIQX support?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "SportIQX is currently focused on VIT Vellore and nearby Vellore areas for early access launch.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 function animateValue(
   duration: number,
   target: number,
@@ -236,8 +301,13 @@ export default function Home() {
       <footer>
         <div className="logo footer-logo">SportIQX</div>
         <p>Book your play. &nbsp;|&nbsp; खेलो बिना रुके.</p>
-        <p className="footer-copy">© 2025 SportIQX. Built in India.</p>
+        <p className="footer-copy">© 2025 SportIQX. Built for players.</p>
       </footer>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
     </div>
   );
 }
