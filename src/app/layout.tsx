@@ -14,14 +14,14 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "SportIQ | Coming Soon",
-  description: "SportIQ early access landing page",
+  title: "SportIQX | Coming Soon",
+  description: "SportIQX early access landing page",
   icons: {
     icon: [
-      { url: "/favicon-sportiq.svg?v=2", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon-sportiqx.svg?v=2", type: "image/svg+xml", sizes: "any" },
     ],
-    shortcut: ["/favicon-sportiq.svg?v=2"],
-    apple: ["/favicon-sportiq.svg?v=2"],
+    shortcut: ["/favicon-sportiqx.svg?v=2"],
+    apple: ["/favicon-sportiqx.svg?v=2"],
   },
 };
 
@@ -36,3 +36,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+

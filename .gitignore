@@ -39,5 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-sportiq-landing-dark.html
-sportiq-landing-light.html
+sportiqx-landing-dark.html
+sportiqx-landing-light.html
