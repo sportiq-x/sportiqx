@@ -197,7 +197,7 @@ export default function Home() {
                 <label htmlFor="features">Features you want</label>
                 <textarea
                   id="features"
-                  placeholder="Tell us what would make SportIQ perfect for you..."
+                  placeholder="Tell us what would make SportIQX perfect for you..."
                 />
               </div>
 
@@ -216,7 +216,7 @@ export default function Home() {
             <div className="success-icon">✓</div>
             <div className="success-title">You&apos;re In.</div>
             <p className="success-desc">
-              Welcome to SportIQ Early Access. Your rewards are locked in. We will notify you on
+              Welcome to SportIQX Early Access. Your rewards are locked in. We will notify you on
               launch.
             </p>
             <div className="rewards-list">
@@ -234,10 +234,11 @@ export default function Home() {
         )}
       </div>
       <footer>
-        <div className="logo footer-logo">SportIQ</div>
+        <div className="logo footer-logo">SportIQX</div>
         <p>Book your play. &nbsp;|&nbsp; खेलो बिना रुके.</p>
         <p className="footer-copy">© 2025 SportIQX. Built in India.</p>
       </footer>
     </div>
   );
 }
+
