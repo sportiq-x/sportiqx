@@ -36,7 +36,7 @@ async function isAuthorized(request: NextRequest) {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const host = request.headers.get("host") || "";
   const isAdminHost = host.startsWith("admin.");

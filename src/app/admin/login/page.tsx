@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState("");
@@ -75,5 +76,13 @@ export default function AdminLoginPage() {
         </form>
       </section>
     </main>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<main className="admin-login-wrap" />}>
+      <AdminLoginForm />
+    </Suspense>
   );
 }
