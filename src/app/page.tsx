@@ -2,6 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 
+type CitySuggestion = {
+  id: number;
+  city: string;
+  region: string;
+  countryCode: string;
+  displayName: string;
+};
+
 const schemaData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -93,8 +101,20 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    phone?: string;
+    location?: string;
+  }>({});
   const [phoneDigits, setPhoneDigits] = useState("");
+  const [cityQuery, setCityQuery] = useState("");
+  const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [cityError, setCityError] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [otherCityMode, setOtherCityMode] = useState(false);
+  const [otherCity, setOtherCity] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -103,6 +123,42 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const query = cityQuery.trim();
+
+    if (query.length < 2 || otherCityMode || selectedLocation === cityQuery) {
+      setCitySuggestions([]);
+      setCityError(null);
+      setCityLoading(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setCityLoading(true);
+        const response = await fetch(`/api/cities?q=${encodeURIComponent(query)}`);
+
+        if (!response.ok) {
+          setCitySuggestions([]);
+          setCityError("City search failed. Please use Other.");
+          return;
+        }
+
+        const result = (await response.json()) as { data?: CitySuggestion[]; error?: string | null };
+        setCitySuggestions(Array.isArray(result.data) ? result.data : []);
+        setCityError(result.error || null);
+        setShowCityDropdown(true);
+      } catch {
+        setCitySuggestions([]);
+        setCityError("Could not fetch cities right now. Please use Other.");
+      } finally {
+        setCityLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [cityQuery, otherCityMode, selectedLocation]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -113,12 +169,19 @@ export default function Home() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const sanitizedPhoneDigits = String(formData.get("phoneDigits") ?? "").replace(/\D/g, "");
+    const finalLocation = otherCityMode ? otherCity.trim() : selectedLocation.trim();
+
+    if (!finalLocation) {
+      setSubmitting(false);
+      setFieldErrors({ location: "Please select your city from suggestions or choose Other." });
+      return;
+    }
 
     const payload = {
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: `+91${sanitizedPhoneDigits}`,
-      location: String(formData.get("location") ?? ""),
+      location: finalLocation,
       sports: String(formData.get("sports") ?? ""),
       features: String(formData.get("features") ?? ""),
       feedback: String(formData.get("feedback") ?? ""),
@@ -164,6 +227,12 @@ export default function Home() {
       setSubmitted(true);
       form.reset();
       setPhoneDigits("");
+      setCityQuery("");
+      setCitySuggestions([]);
+      setCityError(null);
+      setSelectedLocation("");
+      setOtherCityMode(false);
+      setOtherCity("");
     } catch (error) {
       setSubmitting(false);
       setSubmitError(error instanceof Error ? error.message : "Unable to submit form.");
@@ -336,13 +405,115 @@ export default function Home() {
                 <label htmlFor="location">
                   Your City <span className="required-asterisk">*</span>
                 </label>
+                <div className="city-search-wrap">
+                  <input
+                    type="text"
+                    id="location"
+                    placeholder="Search your city..."
+                    value={otherCityMode ? otherCity : cityQuery}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      if (otherCityMode) {
+                        setOtherCity(value);
+                      } else {
+                        setCityQuery(value);
+                        setSelectedLocation("");
+                        setCityError(null);
+                      }
+
+                      setFieldErrors((prev) => ({ ...prev, location: undefined }));
+                    }}
+                    onFocus={() => {
+                      if (!otherCityMode && (citySuggestions.length > 0 || cityQuery.trim().length >= 2)) {
+                        setShowCityDropdown(true);
+                      }
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setShowCityDropdown(false), 120);
+                    }}
+                    required
+                  />
+
+                  {!otherCityMode &&
+                    showCityDropdown &&
+                    (cityQuery.trim().length >= 2 || citySuggestions.length > 0 || cityLoading) && (
+                    <ul className="city-dropdown" role="listbox">
+                      {cityLoading ? (
+                        <li className="city-option city-option-muted">Searching cities...</li>
+                      ) : (
+                        <>
+                          {citySuggestions.length > 0 ? (
+                            citySuggestions.map((city) => (
+                              <li key={city.id}>
+                                <button
+                                  type="button"
+                                  className="city-option"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    setSelectedLocation(city.displayName);
+                                    setCityQuery(city.displayName);
+                                    setShowCityDropdown(false);
+                                    setFieldErrors((prev) => ({ ...prev, location: undefined }));
+                                  }}
+                                >
+                                  {city.displayName}
+                                </button>
+                              </li>
+                            ))
+                          ) : cityError ? null : (
+                            <li className="city-option city-option-muted">No matching city found.</li>
+                          )}
+                        </>
+                      )}
+
+                      {!cityLoading && (
+                        <li>
+                          <button
+                            type="button"
+                            className="city-option city-option-other"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setOtherCityMode(true);
+                              setOtherCity("");
+                              setSelectedLocation("");
+                              setShowCityDropdown(false);
+                            }}
+                          >
+                            Other (my city is not listed)
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+
                 <input
-                  type="text"
-                  id="location"
+                  type="hidden"
                   name="location"
-                  placeholder="Bangalore, Delhi, Mumbai..."
-                  required
+                  value={otherCityMode ? otherCity.trim() : selectedLocation}
                 />
+
+                {otherCityMode && (
+                  <button
+                    type="button"
+                    className="location-reset-btn"
+                    onClick={() => {
+                      setOtherCityMode(false);
+                      setOtherCity("");
+                      setCityQuery("");
+                      setSelectedLocation("");
+                    }}
+                  >
+                    Back to city search
+                  </button>
+                )}
+
+                {fieldErrors.location && (
+                  <p className="field-error" role="alert">
+                    {fieldErrors.location}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
