@@ -93,6 +93,7 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -106,6 +107,7 @@ export default function Home() {
     e.preventDefault();
     setSubmitting(true);
     setSubmitError(null);
+    setFieldErrors({});
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -132,7 +134,24 @@ export default function Home() {
       if (!response.ok) {
         const contentType = response.headers.get("content-type") || "";
         if (contentType.includes("application/json")) {
-          const result = (await response.json()) as { message?: string };
+          const result = (await response.json()) as {
+            message?: string;
+            field?: "email" | "phone";
+            fieldErrors?: { email?: string; phone?: string };
+          };
+
+          if (result.fieldErrors) {
+            setFieldErrors(result.fieldErrors);
+            setSubmitting(false);
+            return;
+          }
+
+          if (result.field) {
+            setFieldErrors({ [result.field]: result.message || "Already registered." });
+            setSubmitting(false);
+            return;
+          }
+
           throw new Error(result.message || "Unable to submit form.");
         }
         const text = await response.text();
@@ -269,6 +288,11 @@ export default function Home() {
                   placeholder="Email Address"
                   required
                 />
+                {fieldErrors.email && (
+                  <p className="field-error" role="alert">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -277,9 +301,18 @@ export default function Home() {
                   type="tel"
                   id="phone"
                   name="phone"
-                  placeholder="Phone Number"
+                  defaultValue="+91"
+                  pattern="\+91[6-9][0-9]{9}"
+                  maxLength={13}
+                  inputMode="numeric"
+                  title="Enter a valid 10-digit mobile number after +91"
                   required
                 />
+                {fieldErrors.phone && (
+                  <p className="field-error" role="alert">
+                    {fieldErrors.phone}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">

@@ -10,8 +10,8 @@ datasource db {
 model WaitlistEntry {
   id        String   @id @default(cuid())
   name      String
-  email     String
-  phone     String
+  email     String   @unique
+  phone     String   @unique
   location  String
   sports    String?
   features  String?
@@ -19,5 +19,4 @@ model WaitlistEntry {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
-  @@index([email])
 }
