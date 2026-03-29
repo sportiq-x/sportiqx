@@ -288,7 +288,7 @@ async function sendWaitlistConfirmationEmail(name: string, email: string) {
                                 font-family: Arial, sans-serif; font-size: 15px; font-weight: bold;
                                 letter-spacing: 0.5px; padding: 16px 48px; border-radius: 10px;
                                 text-decoration: none;">
-                          Visit sportiqx.xyz →
+                          Visit sportiqx
                         </a>
                       </td>
                     </tr>
