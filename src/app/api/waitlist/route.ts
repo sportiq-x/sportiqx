@@ -21,13 +21,25 @@ function isUniqueConstraintError(error: unknown): error is {
 }
 
 const waitlistSchema = z.object({
-  name: z.string().trim().min(2, "Name is required"),
-  email: z.string().trim().toLowerCase().email("Valid email is required"),
-  phone: z
-    .string()
+  name: z
+    .string({ error: "Name is required" })
     .trim()
+    .min(2, "Name is required"),
+  email: z
+    .string({ error: "Email is required" })
+    .trim()
+    .toLowerCase()
+    .min(1, "Email is required")
+    .email("Valid email is required"),
+  phone: z
+    .string({ error: "Phone number is required" })
+    .trim()
+    .min(1, "Phone number is required")
     .regex(/^\+91[6-9]\d{9}$/, "Phone must start with +91 and include a 10-digit mobile number"),
-  location: z.string().trim().min(2, "Location is required"),
+  location: z
+    .string({ error: "Location is required" })
+    .trim()
+    .min(2, "Location is required"),
   sports: z.string().trim().optional(),
   features: z.string().trim().optional(),
   feedback: z.string().trim().optional(),

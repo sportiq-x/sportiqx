@@ -381,6 +381,16 @@ label {
   color: #aaa;
 }
 
+.required-asterisk {
+  display: inline-block;
+  margin-left: 4px;
+  color: #ff3b30;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 input,
 select,
 textarea {
@@ -394,6 +404,42 @@ textarea {
   outline: none;
   transition: border-color 0.2s, background 0.2s;
   width: 100%;
+}
+
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  transition: border-color 0.2s, background 0.2s;
+  overflow: hidden;
+}
+
+.phone-input-group:focus-within {
+  border-color: rgba(230, 81, 0, 0.5);
+  background: #fff8f5;
+}
+
+.phone-prefix {
+  color: #555;
+  font-size: 15px;
+  line-height: 1;
+  padding: 13px 0 13px 16px;
+  border-right: 1px solid #e0e0e0;
+  min-width: 62px;
+}
+
+.phone-input-group input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-left: 12px;
+}
+
+.phone-input-group input:focus {
+  border-color: transparent;
+  background: transparent;
 }
 
 input::placeholder,

@@ -94,6 +94,7 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
+  const [phoneDigits, setPhoneDigits] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -111,11 +112,12 @@ export default function Home() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const sanitizedPhoneDigits = String(formData.get("phoneDigits") ?? "").replace(/\D/g, "");
 
     const payload = {
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
-      phone: String(formData.get("phone") ?? ""),
+      phone: `+91${sanitizedPhoneDigits}`,
       location: String(formData.get("location") ?? ""),
       sports: String(formData.get("sports") ?? ""),
       features: String(formData.get("features") ?? ""),
@@ -161,6 +163,7 @@ export default function Home() {
       setSubmitting(false);
       setSubmitted(true);
       form.reset();
+      setPhoneDigits("");
     } catch (error) {
       setSubmitting(false);
       setSubmitError(error instanceof Error ? error.message : "Unable to submit form.");
@@ -272,15 +275,19 @@ export default function Home() {
         )}
 
         {!submitted ? (
-          <form id="earlyForm" onSubmit={handleSubmit}>
+          <form id="earlyForm" method="post" action="/api/waitlist" onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="name">Your Name</label>
+                <label htmlFor="name">
+                  Your Name <span className="required-asterisk">*</span>
+                </label>
                 <input type="text" id="name" name="name" placeholder="Full Name" required />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email">
+                  Email Address <span className="required-asterisk">*</span>
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -296,18 +303,28 @@ export default function Home() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">Phone Number</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  defaultValue="+91"
-                  pattern="\+91[6-9][0-9]{9}"
-                  maxLength={13}
-                  inputMode="numeric"
-                  title="Enter a valid 10-digit mobile number after +91"
-                  required
-                />
+                <label htmlFor="phone">
+                  Phone Number <span className="required-asterisk">*</span>
+                </label>
+                <div className="phone-input-group">
+                  <span className="phone-prefix">+91</span>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phoneDigits"
+                    value={phoneDigits}
+                    onChange={(e) => {
+                      const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setPhoneDigits(digitsOnly);
+                    }}
+                    placeholder="9876543210"
+                    pattern="[6-9][0-9]{9}"
+                    maxLength={10}
+                    inputMode="numeric"
+                    title="Enter a valid 10-digit mobile number"
+                    required
+                  />
+                </div>
                 {fieldErrors.phone && (
                   <p className="field-error" role="alert">
                     {fieldErrors.phone}
@@ -316,7 +333,9 @@ export default function Home() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="location">Your City</label>
+                <label htmlFor="location">
+                  Your City <span className="required-asterisk">*</span>
+                </label>
                 <input
                   type="text"
                   id="location"
