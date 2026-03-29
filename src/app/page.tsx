@@ -580,7 +580,7 @@ export default function Home() {
       <footer>
         <div className="logo footer-logo">SportIQX</div>
         <p>Book your play. &nbsp;|&nbsp; खेलो बिना रुके.</p>
-        <p className="footer-copy">© 2025 SportIQX. Built for players.</p>
+        <p className="footer-copy">© 2026 SportIQX. Built for players.</p>
       </footer>
 
       <script
