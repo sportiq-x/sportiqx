@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PanelRole {
+  ADMIN
+}
+
 model WaitlistEntry {
   id        String   @id @default(cuid())
   name      String
@@ -19,4 +23,16 @@ model WaitlistEntry {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model SportiqxPanel {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         PanelRole @default(ADMIN)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([role])
+  @@map("sportiqx-panel")
 }

@@ -1,0 +1,1 @@
+-- Placeholder migration to restore previously empty migration directory.
