@@ -448,6 +448,13 @@ textarea {
   cursor: not-allowed;
 }
 
+.submit-error {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  color: #c62828;
+  font-size: 13px;
+}
+
 .success-box {
   display: none;
   text-align: center;
