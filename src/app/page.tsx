@@ -92,6 +92,7 @@ export default function Home() {
   const [earlyUsers, setEarlyUsers] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -101,14 +102,50 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      location: String(formData.get("location") ?? ""),
+      sports: String(formData.get("sports") ?? ""),
+      features: String(formData.get("features") ?? ""),
+      feedback: String(formData.get("feedback") ?? ""),
+    };
+
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const result = (await response.json()) as { message?: string };
+          throw new Error(result.message || "Unable to submit form.");
+        }
+        const text = await response.text();
+        throw new Error(text ? "Server returned an unexpected response." : "Unable to submit form.");
+      }
+
       setSubmitting(false);
       setSubmitted(true);
-    }, 1200);
+      form.reset();
+    } catch (error) {
+      setSubmitting(false);
+      setSubmitError(error instanceof Error ? error.message : "Unable to submit form.");
+    }
   };
 
   return (
@@ -220,17 +257,29 @@ export default function Home() {
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="name">Your Name</label>
-                <input type="text" id="name" placeholder="Rahul Sharma" required />
+                <input type="text" id="name" name="name" placeholder="Full Name" required />
               </div>
 
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
-                <input type="email" id="email" placeholder="rahul@gmail.com" required />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Email Address"
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="phone">Phone Number</label>
-                <input type="tel" id="phone" placeholder="+91 98765 43210" required />
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="Phone Number"
+                  required
+                />
               </div>
 
               <div className="form-group">
@@ -238,42 +287,49 @@ export default function Home() {
                 <input
                   type="text"
                   id="location"
+                  name="location"
                   placeholder="Bangalore, Delhi, Mumbai..."
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="role">You are a</label>
-                <select id="role" defaultValue="">
-                  <option value="">Select role</option>
-                  <option value="user">Player / User</option>
-                  <option value="owner">Venue Owner</option>
-                  <option value="both">Both</option>
-                </select>
-              </div>
-
-              <div className="form-group">
                 <label htmlFor="sports">Sports you play</label>
-                <input type="text" id="sports" placeholder="Football, Cricket, Gaming..." />
+                <input
+                  type="text"
+                  id="sports"
+                  name="sports"
+                  placeholder="Football, Cricket, Gaming..."
+                />
               </div>
 
               <div className="form-group full">
                 <label htmlFor="features">Features you want</label>
                 <textarea
                   id="features"
+                  name="features"
                   placeholder="Tell us what would make SportIQX perfect for you..."
                 />
               </div>
 
               <div className="form-group full">
                 <label htmlFor="feedback">Any feedback or thoughts</label>
-                <textarea id="feedback" placeholder="Anything else on your mind..." />
+                <textarea
+                  id="feedback"
+                  name="feedback"
+                  placeholder="Anything else on your mind..."
+                />
               </div>
 
               <button type="submit" className="submit-btn" disabled={submitting}>
                 {submitting ? "Submitting..." : "Claim My Early Access →"}
               </button>
+
+              {submitError && (
+                <p className="submit-error" role="alert">
+                  {submitError}
+                </p>
+              )}
             </div>
           </form>
         ) : (
