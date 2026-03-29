@@ -55,12 +55,6 @@ export async function proxy(request: NextRequest) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
-  if (isAdminHost && pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    return NextResponse.rewrite(url);
-  }
-
   if (!isAdminPath && !isAdminHost && !isAdminApiPath) {
     return NextResponse.next();
   }
@@ -70,6 +64,18 @@ export async function proxy(request: NextRequest) {
   }
 
   const authorized = await isAuthorized(request);
+
+  if (isAdminHost && pathname === "/") {
+    if (!authorized) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("next", "/admin");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    return NextResponse.rewrite(url);
+  }
 
   if (authorized && isLoginPath) {
     return NextResponse.redirect(new URL("/admin", request.url));
