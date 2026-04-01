@@ -8,10 +8,22 @@ const resendFromEmail = process.env.RESEND_FROM_EMAIL;
 const resendReplyToEmail = process.env.RESEND_REPLY_TO_EMAIL;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const count = await prisma.waitlistEntry.count();
-    return NextResponse.json({ ok: true, count });
+    return NextResponse.json(
+      { ok: true, count },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
       console.error("Failed to fetch waitlist count", error);

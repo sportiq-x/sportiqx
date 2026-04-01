@@ -14,6 +14,9 @@ type HomePageClientProps = {
   initialEarlyUsers: number;
 };
 
+const EARLY_USERS_BASE = 47;
+const EARLY_USERS_POLL_INTERVAL_MS = 8000;
+
 const schemaData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -98,6 +101,45 @@ export default function HomePageClient({ initialEarlyUsers }: HomePageClientProp
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [otherCityMode, setOtherCityMode] = useState(false);
   const [otherCity, setOtherCity] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncEarlyUsers = async () => {
+      try {
+        const response = await fetch("/api/waitlist", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const result = (await response.json()) as { count?: number };
+        if (!cancelled && Number.isFinite(result.count)) {
+          setEarlyUsers(EARLY_USERS_BASE + Number(result.count));
+        }
+      } catch {
+        // Ignore transient polling errors and keep last visible value.
+      }
+    };
+
+    const intervalId = setInterval(syncEarlyUsers, EARLY_USERS_POLL_INTERVAL_MS);
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        void syncEarlyUsers();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     const query = cityQuery.trim();
@@ -200,7 +242,7 @@ export default function HomePageClient({ initialEarlyUsers }: HomePageClientProp
 
       const result = (await response.json()) as { count?: number };
       if (Number.isFinite(result.count)) {
-        setEarlyUsers(Number(result.count) + 47);
+        setEarlyUsers(Number(result.count) + EARLY_USERS_BASE);
       } else {
         setEarlyUsers((prev) => prev + 1);
       }
