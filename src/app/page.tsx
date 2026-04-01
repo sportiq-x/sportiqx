@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 const EARLY_USERS_BASE = 47;
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   let initialEarlyUsers = EARLY_USERS_BASE;
 
