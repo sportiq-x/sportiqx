@@ -8,6 +8,22 @@ const resendFromEmail = process.env.RESEND_FROM_EMAIL;
 const resendReplyToEmail = process.env.RESEND_REPLY_TO_EMAIL;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
+export async function GET() {
+  try {
+    const count = await prisma.waitlistEntry.count();
+    return NextResponse.json({ ok: true, count });
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to fetch waitlist count", error);
+    }
+
+    return NextResponse.json(
+      { ok: false, message: "Unable to fetch waitlist count." },
+      { status: 500 },
+    );
+  }
+}
+
 function isUniqueConstraintError(error: unknown): error is {
   code: string;
   meta?: { target?: string[] | string };
@@ -428,7 +444,9 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true, message: "Joined waitlist successfully." });
+    const count = await prisma.waitlistEntry.count();
+
+    return NextResponse.json({ ok: true, message: "Joined waitlist successfully.", count });
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       const targetMeta = error.meta?.target;
